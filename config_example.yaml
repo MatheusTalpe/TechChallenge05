@@ -1,0 +1,43 @@
+project_name: "visionsecure_mvp"
+
+data_yaml: "./data/dataset.yaml"
+
+model_name: "yolov8n.pt"
+
+runs_dir: "./runs"
+
+train:
+  imgsz: 640
+  epochs: 75
+  batch: 32
+  device: 0
+  patience: 15
+
+inference:
+  weights: "./runs/detect/train/weights/best.pt"
+  conf_thres: 0.5
+  iou_thres: 0.45
+  classes_of_interest:
+    - knife
+    - bat
+    - impact_tool
+
+stream:
+  source: 0
+  fps_process: 5
+
+alerts:
+  min_persistent_frames: 3
+  webhook_url: "http://localhost:8000/alert"
+  send_frame: true
+  email:
+    enabled: true
+
+auto_label:
+  weights: "runs/pretrained/weapons.pt"
+  conf_thres: 0.5
+  iou_thres: 0.45
+  classes_of_interest:
+    - knife
+    - bat
+    - impact_tool
