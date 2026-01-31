@@ -5,3 +5,7 @@ val: images/val
 
 names:
   0: knife
+  1: bat
+  2: impact_tool
+  3: scissor
+  4: scissors
