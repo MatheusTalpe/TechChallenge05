@@ -6,7 +6,11 @@ from dotenv import load_dotenv
 
 
 def load_yaml_config(path: str = "config.yaml") -> dict:
+    print("Lendo config de:", path)  # DEBUG
     with open(path, "r", encoding="utf-8") as f:
+        text = f.read()
+        print("Conteúdo bruto do config.yaml:\n", text[:500])  # mostra início
+        f.seek(0)
         return yaml.safe_load(f)
 
 

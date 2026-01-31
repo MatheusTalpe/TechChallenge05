@@ -1,9 +1,7 @@
-path: ../data   # relativo à pasta onde você roda o treino (raiz do projeto)
+path: ../data
 
 train: images/train
 val: images/val
 
 names:
   0: knife
-  1: bat
-  2: impact_tool

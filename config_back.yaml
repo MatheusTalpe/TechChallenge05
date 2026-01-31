@@ -1,0 +1,43 @@
+project_name: "visionsecure_mvp"
+
+data_yaml: "./data/dataset.yaml"
+
+# modelo base para fine-tuning
+model_name: "yolov8n.pt"
+
+runs_dir: "./runs"
+
+train:
+  imgsz: 640
+  epochs: 75
+  batch: 32        # reduza p/ 16 ou 8 se faltar VRAM
+  device: 0        # 0 = GPU; -1 = CPU
+  patience: 15
+
+inference:
+  weights: "./runs/detect/train/weights/best.pt"
+  conf_thres: 0.5
+  iou_thres: 0.45
+  # classes que queremos monitorar na inferência
+  classes_of_interest:
+    - Axe
+    - Chainsaw
+    - Chisel
+    - Dumbbell
+    - Fork
+    - Hammer
+    - Knife
+    - Scissors
+    - Screwdriver
+    - Stapler
+
+stream:
+  source: 0
+  fps_process: 5
+
+alerts:
+  min_persistent_frames: 3
+  webhook_url: "http://localhost:8000/alert"
+  send_frame: true
+  email:
+    enabled: true   # credenciais vêm do .env
