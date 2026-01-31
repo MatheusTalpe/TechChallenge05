@@ -1,6 +1,6 @@
 # VisionSecure AI - MVP de Detecao de Objetos Perigosos
 
-MVP para deteccao de objetos perigosos (facas, bastoes e ferramentas de impacto) em imagens e video (webcam), com geracao de alertas via webhook e e-mail, usando YOLO.
+MVP para deteccao de objetos perigosos (facas, bastoes, ferramentas de impacto e tesouras) em imagens e video (webcam), com geracao de alertas via webhook e e-mail, usando YOLO.
 
 ## Sobre o Projeto
 
@@ -10,7 +10,7 @@ Este MVP (Minimum Viable Product) e capaz de identificar objetos perigosos em di
 
 ### Funcionalidades
 
-O sistema oferece deteccao automatizada de tres classes de objetos perigosos: facas (knife), bastoes (bat) e ferramentas de impacto (impact_tool). Alem disso, possui um sistema de alertas automaticos via webhook e e-mail quando objetos perigosos sao detectados, suporte a deteccao em tempo real via webcam, auto-rotulagem de imagens usando modelo YOLO pre-treinado, e treinamento de modelo customizado com dataset proprio.
+O sistema oferece deteccao automatizada de cinco classes de objetos perigosos: facas (knife), bastoes (bat), ferramentas de impacto (impact_tool), tesoura (scissor) e tesouras (scissors). Alem disso, possui um sistema de alertas automaticos via webhook e e-mail quando objetos perigosos sao detectados, suporte a deteccao em tempo real via webcam, auto-rotulagem de imagens usando modelo YOLO pre-treinado, e treinamento de modelo customizado com dataset proprio.
 
 ### Arquitetura
 
@@ -187,7 +187,7 @@ Os alertas sao enviados via webhook HTTP POST para a URL configurada e via e-mai
 
 ## Classes Detectadas
 
-O modelo detecta tres classes de objetos perigosos: knife (faca) com severidade alta, bat (bastao) com severidade media, e impact_tool (ferramenta de impacto como martelo, chave inglesa) com severidade media.
+O modelo detecta cinco classes de objetos perigosos: knife (faca) com severidade alta, bat (bastao) com severidade media, impact_tool (ferramenta de impacto como martelo, chave inglesa) com severidade media, scissor (tesoura) com severidade media, e scissors (tesouras) com severidade media.
 
 ## Requisitos de Hardware
 

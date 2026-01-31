@@ -21,6 +21,8 @@ inference:
     - knife
     - bat
     - impact_tool
+    - scissor
+    - scissors
 
 stream:
   source: 0
@@ -41,3 +43,5 @@ auto_label:
     - knife
     - bat
     - impact_tool
+    - scissor
+    - scissors
