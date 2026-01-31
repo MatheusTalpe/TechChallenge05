@@ -1,0 +1,53 @@
+project_name: "visionsecure_mvp"
+
+# Caminho do dataset YOLO (será criado por você em data/dataset.yaml)
+data_yaml: "./data/dataset.yaml"
+
+# Modelo base para fine-tuning (treino)
+model_name: "yolov8n.pt"
+
+# Pasta onde os resultados de treino serão salvos
+runs_dir: "./runs"
+
+# Configurações de treino
+train:
+  imgsz: 640
+  epochs: 75
+  batch: 32
+  device: 0        # 0 = primeira GPU; -1 = CPU
+  patience: 15
+
+# Configurações de inferência (detecção em tempo real)
+inference:
+  # DEPOIS DO TREINO, ajustar para o caminho do best.pt gerado
+  weights: "./runs/detect/train/weights/best.pt"
+  conf_thres: 0.5
+  iou_thres: 0.45
+  classes_of_interest: ["knife", "bat", "impact_tool"]
+
+# Fonte de vídeo (webcam)
+stream:
+  source: 0         # 0 = webcam padrão do Windows
+  fps_process: 5    # quantos frames por segundo serão processados
+
+# Sistema de alertas
+alerts:
+  min_persistent_frames: 3
+  webhook_url: "http://localhost:8000/alert"
+  send_frame: true
+
+  email:
+    enabled: true   # controle liga/desliga (credenciais vêm do .env)
+
+# Configuração da AUTO-ROTULAÇÃO (pseudo-labeling)
+auto_label:
+  # modelo YOLO pré-treinado para armas / objetos perigosos
+  # ex.: arquivo .pt baixado de Roboflow ou GitHub e salvo em runs/pretrained/
+  weights: "runs/pretrained/weapons.pt"
+
+  conf_thres: 0.5
+  iou_thres: 0.45
+
+  # nomes de classes que o modelo pré-treinado reconhece
+  # ajuste se o modelo usar outros nomes
+  classes_of_interest: ["knife", "bat", "impact_tool"]
