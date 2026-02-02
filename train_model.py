@@ -106,6 +106,7 @@ def main():
         project=runs_dir,
         name="detect",
         patience=train_cfg.get("patience", 10),
+        workers=0,  # Disable multiprocessing to avoid memory errors on Windows
     )
 
     best_weights_path = results.save_dir / "weights" / "best.pt"
