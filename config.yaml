@@ -20,6 +20,8 @@ inference:
   iou_thres: 0.45
   classes_of_interest:
     - knife
+    - scissor
+    - scissors
 
 stream:
   source: 0
