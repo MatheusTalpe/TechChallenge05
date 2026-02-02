@@ -78,7 +78,9 @@ def plot_training_metrics(results_dir: Path):
 def main():
     cfg = load_yaml_config()
 
-    data_yaml = cfg["data_yaml"]
+    # Resolve data_yaml to absolute path for Windows compatibility
+    script_dir = Path(__file__).parent.resolve()
+    data_yaml = str(script_dir / cfg["data_yaml"])
     model_name = cfg.get("model_name", "yolov8n.pt")
     runs_dir = cfg.get("runs_dir", "./runs")
     train_cfg = cfg.get("train", {})
