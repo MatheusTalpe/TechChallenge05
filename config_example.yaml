@@ -9,7 +9,7 @@ runs_dir: "./runs"
 train:
   imgsz: 640
   epochs: 75
-  batch: 32
+  batch: 8  # reduced from 32 for GPUs with limited memory (e.g., GTX 1660 Ti)
   device: 0
   patience: 15
 
