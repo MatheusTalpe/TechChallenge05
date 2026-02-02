@@ -9,10 +9,10 @@ runs_dir: "./runs"
 
 train:
   imgsz: 640
-  epochs: 75
-  batch: 32
+  epochs: 40
+  batch: 8
   device: 0
-  patience: 15
+  patience: 10
 
 inference:
   weights: "./runs/detect/train/weights/best.pt"
