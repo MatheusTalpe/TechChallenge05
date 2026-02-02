@@ -22,6 +22,10 @@ inference:
     - knife
     - scissor
     - scissors
+    - bat
+    - impact_tool
+    - scissor
+    - scissors
 
 stream:
   source: 0
