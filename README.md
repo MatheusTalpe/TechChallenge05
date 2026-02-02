@@ -82,6 +82,8 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+O arquivo `requirements.txt` ja inclui PyTorch com suporte a CUDA para GPUs NVIDIA. Se voce nao tiver uma GPU NVIDIA ou preferir treinar em CPU, altere `device: 0` para `device: cpu` no arquivo `config.yaml`.
+
 ### Passo 4: Configurar Variaveis de Ambiente
 
 Copie o arquivo de exemplo e edite com suas credenciais:
