@@ -9,10 +9,10 @@ runs_dir: "./runs"
 
 train:
   imgsz: 640
-  epochs: 75
-  batch: 8  # reduced from 32 for GPUs with limited memory (e.g., GTX 1660 Ti)
+  epochs: 40
+  batch: 8
   device: 0
-  patience: 15
+  patience: 10
 
 inference:
   weights: "./runs/detect/train/weights/best.pt"
@@ -20,6 +20,8 @@ inference:
   iou_thres: 0.45
   classes_of_interest:
     - knife
+    - scissor
+    - scissors
     - bat
     - impact_tool
     - scissor

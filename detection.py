@@ -88,7 +88,7 @@ def build_alert_payload(camera_id, detections, frame_path=None):
             {"class": cls_name, "confidence": conf, "bbox": bbox}
         )
 
-        if cls_name == "knife":
+        if cls_name == "knife" or cls_name == "scissor" or cls_name == "scissors" :
             max_severity = "high"
         elif cls_name in ["bat", "impact_tool"] and max_severity != "high":
             max_severity = "medium"
