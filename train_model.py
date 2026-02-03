@@ -4,6 +4,27 @@ from config import load_yaml_config
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
+import yaml
+import tempfile
+import os
+
+
+def create_dataset_yaml_with_absolute_path(original_yaml_path: Path) -> str:
+    """
+    Creates a temporary dataset.yaml with absolute paths for Windows compatibility.
+    YOLO sometimes ignores relative paths, so we convert them to absolute paths.
+    """
+    with open(original_yaml_path, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    
+    data_dir = original_yaml_path.parent.resolve()
+    data["path"] = str(data_dir)
+    
+    temp_fd, temp_path = tempfile.mkstemp(suffix=".yaml", prefix="dataset_")
+    with os.fdopen(temp_fd, "w", encoding="utf-8") as f:
+        yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
+    
+    return temp_path
 
 
 def plot_training_metrics(results_dir: Path):
@@ -78,9 +99,10 @@ def plot_training_metrics(results_dir: Path):
 def main():
     cfg = load_yaml_config()
 
-    # Resolve data_yaml to absolute path for Windows compatibility
+    # Create temporary dataset.yaml with absolute paths for Windows compatibility
     script_dir = Path(__file__).parent.resolve()
-    data_yaml = str(script_dir / cfg["data_yaml"])
+    original_data_yaml = script_dir / cfg["data_yaml"]
+    data_yaml = create_dataset_yaml_with_absolute_path(original_data_yaml)
     model_name = cfg.get("model_name", "yolov8n.pt")
     runs_dir = cfg.get("runs_dir", "./runs")
     train_cfg = cfg.get("train", {})
