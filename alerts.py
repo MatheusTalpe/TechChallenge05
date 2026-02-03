@@ -27,6 +27,11 @@ def _send_email_sync(email_cfg: dict, payload: dict):
     """
     Funcao interna que envia o email de forma sincrona.
     Chamada em uma thread separada para nao bloquear o loop principal.
+    
+    Suporta diferentes configuracoes de SMTP:
+    - Porta 465: SSL implicito (use_ssl=True)
+    - Porta 587: STARTTLS (use_tls=True)
+    - Porta 25/2525: Sem criptografia ou STARTTLS opcional
     """
     smtp_server = email_cfg.get("smtp_server")
     smtp_port = email_cfg.get("smtp_port", 587)
@@ -35,6 +40,7 @@ def _send_email_sync(email_cfg: dict, payload: dict):
     from_addr = email_cfg.get("from_addr")
     to_addrs = email_cfg.get("to_addrs", [])
     use_tls = email_cfg.get("use_tls", True)
+    use_ssl = email_cfg.get("use_ssl", False)
 
     severity = payload.get("severity", "medium")
     camera_id = payload.get("camera_id", "desconhecida")
@@ -79,14 +85,27 @@ def _send_email_sync(email_cfg: dict, payload: dict):
             print("Nao foi possivel anexar o frame ao e-mail:", e)
 
     try:
-        with smtplib.SMTP(smtp_server, smtp_port, timeout=10) as server:
-            if use_tls:
-                server.starttls()
-            server.login(username, password)
-            server.send_message(msg)
+        if use_ssl:
+            with smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=15) as server:
+                server.login(username, password)
+                server.send_message(msg)
+        else:
+            with smtplib.SMTP(smtp_server, smtp_port, timeout=15) as server:
+                server.ehlo()
+                if use_tls:
+                    server.starttls()
+                    server.ehlo()
+                server.login(username, password)
+                server.send_message(msg)
         print("Alerta (e-mail) enviado para:", to_addrs)
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"Falha na autenticacao SMTP: {e}")
+    except smtplib.SMTPConnectError as e:
+        print(f"Falha ao conectar ao servidor SMTP: {e}")
+    except smtplib.SMTPException as e:
+        print(f"Erro SMTP: {e}")
     except Exception as e:
-        print("Falha ao enviar e-mail de alerta:", e)
+        print(f"Falha ao enviar e-mail de alerta: {e}")
 
 
 def send_email_alert(email_cfg: dict, payload: dict, enabled: bool = True):
