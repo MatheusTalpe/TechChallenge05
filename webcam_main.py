@@ -1,6 +1,8 @@
 # webcam_main.py
 import time
 import cv2
+import os
+from pathlib import Path
 
 from config import load_yaml_config, load_email_env
 from detection import (
@@ -10,6 +12,76 @@ from detection import (
     build_alert_payload,
 )
 from alerts import send_webhook_alert, send_email_alert
+
+
+def find_best_weights(runs_dir: str = "./runs") -> str:
+    """
+    Encontra o melhor arquivo de pesos (best.pt) dentre todos os runs de treinamento.
+    Prioriza o run mais recente que contenha um arquivo best.pt valido.
+    
+    Args:
+        runs_dir: Diretorio base onde os runs sao salvos
+        
+    Returns:
+        Caminho para o melhor arquivo de pesos encontrado, ou None se nao encontrar
+    """
+    runs_path = Path(runs_dir)
+    if not runs_path.exists():
+        return None
+    
+    best_weights = None
+    latest_mtime = 0
+    
+    for run_dir in runs_path.iterdir():
+        if not run_dir.is_dir():
+            continue
+        
+        weights_path = run_dir / "weights" / "best.pt"
+        if weights_path.exists():
+            mtime = weights_path.stat().st_mtime
+            if mtime > latest_mtime:
+                latest_mtime = mtime
+                best_weights = str(weights_path)
+    
+    return best_weights
+
+
+def get_model_weights(cfg: dict) -> str:
+    """
+    Determina o caminho dos pesos do modelo a ser usado.
+    Primeiro tenta usar o caminho configurado, se nao existir,
+    busca automaticamente o melhor modelo disponivel.
+    
+    Args:
+        cfg: Configuracao carregada do config.yaml
+        
+    Returns:
+        Caminho para os pesos do modelo
+        
+    Raises:
+        FileNotFoundError: Se nenhum modelo for encontrado
+    """
+    inf_cfg = cfg["inference"]
+    configured_weights = inf_cfg.get("weights", "")
+    runs_dir = cfg.get("runs_dir", "./runs")
+    
+    if configured_weights and os.path.exists(configured_weights):
+        print(f"Usando modelo configurado: {configured_weights}")
+        return configured_weights
+    
+    print(f"Modelo configurado nao encontrado: {configured_weights}")
+    print("Buscando melhor modelo disponivel...")
+    
+    best_weights = find_best_weights(runs_dir)
+    
+    if best_weights:
+        print(f"Modelo encontrado automaticamente: {best_weights}")
+        return best_weights
+    
+    raise FileNotFoundError(
+        f"Nenhum modelo encontrado. Execute train_model.py primeiro para treinar um modelo, "
+        f"ou configure o caminho correto em config.yaml (inference.weights)"
+    )
 
 
 def main():
@@ -22,8 +94,17 @@ def main():
     email_env_cfg = load_email_env()
     email_enabled = alerts_cfg.get("email", {}).get("enabled", True)
 
-    # Modelo
-    model = load_model(inf_cfg["weights"])
+    # Modelo - busca automaticamente o melhor disponivel
+    try:
+        weights_path = get_model_weights(cfg)
+        model = load_model(weights_path)
+    except FileNotFoundError as e:
+        print(f"Erro: {e}")
+        return
+    except Exception as e:
+        print(f"Erro ao carregar modelo: {e}")
+        return
+    
     class_names_of_interest = set(inf_cfg["classes_of_interest"])
     conf_thres = inf_cfg.get("conf_thres", 0.5)
     iou_thres = inf_cfg.get("iou_thres", 0.45)
