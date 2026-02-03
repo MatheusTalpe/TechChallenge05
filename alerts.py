@@ -32,7 +32,11 @@ def _send_email_sync(email_cfg: dict, payload: dict):
     - Porta 465: SSL implicito (use_ssl=True)
     - Porta 587: STARTTLS (use_tls=True)
     - Porta 25/2525: Sem criptografia ou STARTTLS opcional
+    
+    Para Mailtrap sandbox, recomenda-se usar porta 587 com STARTTLS.
     """
+    import socket
+    
     smtp_server = email_cfg.get("smtp_server")
     smtp_port = email_cfg.get("smtp_port", 587)
     username = email_cfg.get("username")
@@ -85,25 +89,39 @@ def _send_email_sync(email_cfg: dict, payload: dict):
             print("Nao foi possivel anexar o frame ao e-mail:", e)
 
     try:
+        local_hostname = socket.gethostname()
+        
         if use_ssl:
-            with smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=15) as server:
+            server = smtplib.SMTP_SSL(smtp_server, smtp_port, local_hostname=local_hostname, timeout=30)
+            try:
                 server.login(username, password)
                 server.send_message(msg)
+                print("Alerta (e-mail) enviado para:", to_addrs)
+            finally:
+                server.quit()
         else:
-            with smtplib.SMTP(smtp_server, smtp_port, timeout=15) as server:
-                server.ehlo()
+            server = smtplib.SMTP(smtp_server, smtp_port, local_hostname=local_hostname, timeout=30)
+            try:
                 if use_tls:
                     server.starttls()
-                    server.ehlo()
                 server.login(username, password)
                 server.send_message(msg)
-        print("Alerta (e-mail) enviado para:", to_addrs)
+                print("Alerta (e-mail) enviado para:", to_addrs)
+            finally:
+                server.quit()
+                
     except smtplib.SMTPAuthenticationError as e:
         print(f"Falha na autenticacao SMTP: {e}")
+        print("Verifique EMAIL_USERNAME e EMAIL_PASSWORD no arquivo .env")
     except smtplib.SMTPConnectError as e:
         print(f"Falha ao conectar ao servidor SMTP: {e}")
+        print(f"Servidor: {smtp_server}:{smtp_port}")
     except smtplib.SMTPException as e:
         print(f"Erro SMTP: {e}")
+        print("Tente usar porta 587 com EMAIL_USE_TLS=true para Mailtrap")
+    except socket.timeout:
+        print("Timeout ao conectar ao servidor SMTP")
+        print(f"Servidor: {smtp_server}:{smtp_port}")
     except Exception as e:
         print(f"Falha ao enviar e-mail de alerta: {e}")
 
