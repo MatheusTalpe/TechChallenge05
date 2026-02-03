@@ -76,17 +76,22 @@ def _send_email_sync(email_cfg: dict, payload: dict):
     msg.set_content(body)
 
     if frame_path:
-        try:
-            with open(frame_path, "rb") as f:
-                img_data = f.read()
-            msg.add_attachment(
-                img_data,
-                maintype="image",
-                subtype="jpeg",
-                filename=Path(frame_path).name,
-            )
-        except Exception as e:
-            print("Nao foi possivel anexar o frame ao e-mail:", e)
+        frame_file = Path(frame_path)
+        if frame_file.exists():
+            try:
+                with open(frame_path, "rb") as f:
+                    img_data = f.read()
+                msg.add_attachment(
+                    img_data,
+                    maintype="image",
+                    subtype="jpeg",
+                    filename=frame_file.name,
+                )
+                print(f"Imagem anexada ao e-mail: {frame_file.name}")
+            except Exception as e:
+                print(f"Nao foi possivel anexar o frame ao e-mail: {e}")
+        else:
+            print(f"Arquivo de frame nao encontrado: {frame_path}")
 
     try:
         local_hostname = socket.gethostname()

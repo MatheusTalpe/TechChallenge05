@@ -89,11 +89,12 @@ def save_frame(frame, output_dir="frames"):
         output_dir: Diretorio onde salvar o frame
         
     Returns:
-        Caminho do arquivo salvo
+        Caminho absoluto do arquivo salvo
     """
-    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    output_path = Path(output_dir).resolve()
+    output_path.mkdir(parents=True, exist_ok=True)
     ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S_%f")
-    filename = Path(output_dir) / f"frame_{ts}.jpg"
+    filename = output_path / f"frame_{ts}.jpg"
     cv2.imwrite(str(filename), frame)
     return str(filename)
 
