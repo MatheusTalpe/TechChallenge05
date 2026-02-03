@@ -15,13 +15,11 @@ train:
   patience: 10
 
 inference:
-  weights: "./runs/detect/train/weights/best.pt"
-  conf_thres: 0.5
+  weights: "./runs/detect/weights/best.pt"
+  conf_thres: 0.4
   iou_thres: 0.45
   classes_of_interest:
     - knife
-    - scissor
-    - scissors
     - bat
     - impact_tool
     - scissor

@@ -5,8 +5,29 @@ from datetime import datetime
 from ultralytics import YOLO
 
 
-def load_model(weights_path: str):
-    return YOLO(weights_path)
+def load_model(weights_path: str) -> YOLO:
+    """
+    Carrega o modelo YOLO a partir do arquivo de pesos.
+    
+    Args:
+        weights_path: Caminho para o arquivo de pesos (.pt)
+        
+    Returns:
+        Modelo YOLO carregado
+        
+    Raises:
+        FileNotFoundError: Se o arquivo de pesos nao existir
+        Exception: Se houver erro ao carregar o modelo
+    """
+    weights_file = Path(weights_path)
+    if not weights_file.exists():
+        raise FileNotFoundError(f"Arquivo de pesos nao encontrado: {weights_path}")
+    
+    try:
+        model = YOLO(weights_path)
+        return model
+    except Exception as e:
+        raise Exception(f"Erro ao carregar modelo YOLO: {e}")
 
 
 def run_inference(model, frame, conf_thres: float, iou_thres: float, classes_of_interest: set):
@@ -60,25 +81,53 @@ def run_inference(model, frame, conf_thres: float, iou_thres: float, classes_of_
 
 
 def save_frame(frame, output_dir="frames"):
+    """
+    Salva um frame em disco com timestamp unico.
+    
+    Args:
+        frame: Frame OpenCV a ser salvo
+        output_dir: Diretorio onde salvar o frame
+        
+    Returns:
+        Caminho do arquivo salvo
+    """
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S_%f")
     filename = Path(output_dir) / f"frame_{ts}.jpg"
-    import cv2 as _cv2
-    _cv2.imwrite(str(filename), frame)
+    cv2.imwrite(str(filename), frame)
     return str(filename)
 
 
 def build_alert_payload(camera_id, detections, frame_path=None):
-    from datetime import datetime as _dt
-
+    """
+    Constroi o payload de alerta com informacoes das deteccoes.
+    
+    Args:
+        camera_id: Identificador da camera
+        detections: Lista de deteccoes com classe, confianca e bbox
+        frame_path: Caminho opcional do frame salvo
+        
+    Returns:
+        Dicionario com payload do alerta
+    """
     payload = {
-        "timestamp": _dt.utcnow().isoformat() + "Z",
+        "timestamp": datetime.utcnow().isoformat() + "Z",
         "camera_id": camera_id,
         "objects_detected": [],
         "severity": "medium",
     }
 
-    max_severity = "medium"
+    severity_map = {
+        "knife": "high",
+        "scissor": "medium",
+        "scissors": "medium",
+        "bat": "medium",
+        "impact_tool": "medium",
+    }
+
+    max_severity = "low"
+    severity_order = {"low": 0, "medium": 1, "high": 2}
+
     for det in detections:
         cls_name = det["class"]
         conf = det["confidence"]
@@ -88,12 +137,11 @@ def build_alert_payload(camera_id, detections, frame_path=None):
             {"class": cls_name, "confidence": conf, "bbox": bbox}
         )
 
-        if cls_name == "knife" or cls_name == "scissor" or cls_name == "scissors" :
-            max_severity = "high"
-        elif cls_name in ["bat", "impact_tool"] and max_severity != "high":
-            max_severity = "medium"
+        det_severity = severity_map.get(cls_name, "medium")
+        if severity_order.get(det_severity, 0) > severity_order.get(max_severity, 0):
+            max_severity = det_severity
 
-    payload["severity"] = max_severity
+    payload["severity"] = max_severity if max_severity != "low" else "medium"
     if frame_path:
         payload["frame_path"] = frame_path
 
