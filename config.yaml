@@ -10,7 +10,7 @@ runs_dir: "./runs"
 train:
   imgsz: 640
   epochs: 40
-  batch: 8
+  batch: 4
   device: 0
   patience: 10
 
