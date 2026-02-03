@@ -2,7 +2,9 @@
 import requests
 import smtplib
 import threading
-from email.message import EmailMessage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 from pathlib import Path
 
 
@@ -69,11 +71,11 @@ def _send_email_sync(email_cfg: dict, payload: dict):
 
     body = "\n".join(body_lines)
 
-    msg = EmailMessage()
+    msg = MIMEMultipart()
     msg["Subject"] = subject
     msg["From"] = from_addr
     msg["To"] = ", ".join(to_addrs)
-    msg.set_content(body)
+    msg.attach(MIMEText(body, "plain"))
 
     if frame_path:
         frame_file = Path(frame_path)
@@ -81,12 +83,13 @@ def _send_email_sync(email_cfg: dict, payload: dict):
             try:
                 with open(frame_path, "rb") as f:
                     img_data = f.read()
-                msg.add_attachment(
-                    img_data,
-                    maintype="image",
-                    subtype="jpeg",
-                    filename=frame_file.name,
+                img_attachment = MIMEImage(img_data, _subtype="jpeg")
+                img_attachment.add_header(
+                    "Content-Disposition",
+                    "attachment",
+                    filename=frame_file.name
                 )
+                msg.attach(img_attachment)
                 print(f"Imagem anexada ao e-mail: {frame_file.name}")
             except Exception as e:
                 print(f"Nao foi possivel anexar o frame ao e-mail: {e}")
@@ -100,7 +103,7 @@ def _send_email_sync(email_cfg: dict, payload: dict):
             server = smtplib.SMTP_SSL(smtp_server, smtp_port, local_hostname=local_hostname, timeout=30)
             try:
                 server.login(username, password)
-                server.send_message(msg)
+                server.sendmail(from_addr, to_addrs, msg.as_string())
                 print("Alerta (e-mail) enviado para:", to_addrs)
             finally:
                 server.quit()
@@ -110,7 +113,7 @@ def _send_email_sync(email_cfg: dict, payload: dict):
                 if use_tls:
                     server.starttls()
                 server.login(username, password)
-                server.send_message(msg)
+                server.sendmail(from_addr, to_addrs, msg.as_string())
                 print("Alerta (e-mail) enviado para:", to_addrs)
             finally:
                 server.quit()
