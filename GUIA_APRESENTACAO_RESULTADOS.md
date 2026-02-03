@@ -62,64 +62,160 @@ Com base no mAP@0.50 de **82.7%**, o modelo atinge o nivel de assertividade **AL
 
 ## 4. Evolucao do Treinamento
 
-### Curvas de Loss (Perda)
+### Grafico de Evolucao Geral (results.png)
 
-O grafico de perdas demonstra convergencia saudavel do modelo:
+![Evolucao do Treinamento](runs/detect8/results.png)
 
-**Treino:**
-- Box Loss: 1.57 -> 0.83 (reducao de 47%)
-- Classification Loss: 2.70 -> 0.57 (reducao de 79%)
-- DFL Loss: 1.78 -> 1.22 (reducao de 31%)
+Este grafico apresenta a evolucao completa do treinamento ao longo das 40 epocas, dividido em 10 subgraficos:
 
-**Validacao:**
-- Box Loss: 1.86 -> 1.42 (reducao de 24%)
-- Classification Loss: 2.73 -> 0.97 (reducao de 64%)
-- DFL Loss: 2.09 -> 1.65 (reducao de 21%)
+**Linha Superior (Metricas de Treino e Validacao):**
 
-A reducao consistente das perdas tanto no treino quanto na validacao indica que o modelo aprendeu efetivamente sem overfitting significativo.
+1. **train/box_loss**: Perda de localizacao das bounding boxes no treino. Iniciou em ~1.6 e reduziu para ~0.83, indicando que o modelo aprendeu a localizar objetos com precisao crescente.
 
-### Evolucao das Metricas
+2. **train/cls_loss**: Perda de classificacao no treino. Apresentou a maior reducao (2.7 -> 0.57), demonstrando excelente aprendizado na identificacao das classes.
 
-- **Precisao**: Iniciou em 48% e cresceu consistentemente ate 81.5%
-- **Recall**: Iniciou em 42% e cresceu ate 78.6%
-- **mAP@0.50**: Iniciou em 40% e atingiu 82.7%
-- **mAP@0.50-0.95**: Iniciou em 18.5% e atingiu 50.2%
+3. **train/dfl_loss**: Distribution Focal Loss, relacionada a qualidade das bordas das deteccoes. Reducao de 1.78 para 1.22.
 
----
+4. **metrics/precision(B)**: Precisao ao longo do treino. Crescimento consistente de ~48% para ~81.5%, mostrando que o modelo reduziu falsos positivos progressivamente.
 
-## 5. Analise da Matriz de Confusao
+5. **metrics/recall(B)**: Recall ao longo do treino. Crescimento de ~42% para ~78.6%, indicando melhoria na capacidade de detectar todos os objetos presentes.
 
-A matriz de confusao revela o desempenho do modelo por classe:
+**Linha Inferior (Validacao e mAP):**
 
-### Deteccoes Corretas (True Positives)
-- **knife**: 901 deteccoes corretas
+6. **val/box_loss**: Perda de localizacao na validacao. Reducao de 1.86 para 1.42, acompanhando o treino sem divergencia significativa (sem overfitting).
 
-### Erros de Classificacao
-- **Falsos Negativos** (knife nao detectado): 156 casos
-- **Falsos Positivos** (background classificado como knife): 231 casos
-- **Confusao knife/scissor**: 15 casos
+7. **val/cls_loss**: Perda de classificacao na validacao. Reducao de 2.73 para 0.97, confirmando generalizacao do aprendizado.
 
-### Taxa de Acerto por Classe
-- **knife**: 901/(901+156) = **85.2%** de recall
+8. **val/dfl_loss**: DFL na validacao. Reducao de 2.09 para 1.65.
+
+9. **metrics/mAP50(B)**: Mean Average Precision com IoU=0.50. Crescimento de ~40% para **82.7%**, metrica principal de avaliacao.
+
+10. **metrics/mAP50-95(B)**: mAP medio em diferentes limiares de IoU (0.50 a 0.95). Crescimento de ~18.5% para **50.2%**, indicando boa precisao em deteccoes mais rigorosas.
+
+**Interpretacao Geral**: As curvas mostram convergencia saudavel - todas as perdas diminuem consistentemente enquanto as metricas de desempenho aumentam. A proximidade entre curvas de treino e validacao indica ausencia de overfitting.
 
 ---
 
-## 6. Curvas de Desempenho
+## 5. Distribuicao do Dataset (labels.jpg)
 
-### Curva Precision-Recall (PR)
+![Distribuicao do Dataset](runs/detect8/labels.jpg)
 
-A curva PR mostra a relacao entre precisao e recall em diferentes limiares de confianca:
-- **Area sob a curva (mAP@0.5)**: 0.827
-- A curva mantem alta precisao (>90%) ate recall de aproximadamente 60%
-- Ponto de equilibrio otimo em torno de 80% precisao e 80% recall
+Este grafico apresenta 4 visualizacoes sobre a composicao do dataset:
 
-### Curva F1-Confidence
+**Quadrante Superior Esquerdo - Distribuicao de Classes:**
+- Mostra a quantidade de instancias por classe
+- **knife**: ~7.000 instancias (classe dominante)
+- **scissor**: poucas instancias
+- **scissors**: poucas instancias
+- Observacao: O dataset e desbalanceado, com predominancia de facas
 
-A curva F1 indica o melhor limiar de confianca para operacao:
-- **Melhor F1-Score**: 0.80
-- **Limiar de confianca otimo**: 0.369
+**Quadrante Superior Direito - Distribuicao de Bounding Boxes:**
+- Visualizacao de todas as bounding boxes sobrepostas
+- Mostra a variedade de tamanhos e posicoes dos objetos no dataset
+- Concentracao maior no centro das imagens
 
-Recomendacao: Utilizar limiar de confianca entre 0.35 e 0.50 para balancear precisao e recall.
+**Quadrante Inferior Esquerdo - Distribuicao Espacial (x, y):**
+- Heatmap mostrando onde os objetos aparecem nas imagens
+- Concentracao no centro (coordenadas 0.4-0.6)
+- Boa distribuicao geral, cobrindo diferentes regioes
+
+**Quadrante Inferior Direito - Distribuicao de Tamanhos (width, height):**
+- Heatmap de largura vs altura das bounding boxes
+- Concentracao em objetos pequenos (canto inferior esquerdo)
+- Variedade de proporcoes, desde objetos finos ate mais largos
+
+---
+
+## 6. Analise da Matriz de Confusao
+
+### Matriz de Confusao (confusion_matrix.png)
+
+![Matriz de Confusao](runs/detect8/confusion_matrix.png)
+
+A matriz de confusao mostra como o modelo classifica cada amostra, comparando predicoes (eixo Y) com valores reais (eixo X):
+
+**Leitura da Matriz:**
+
+| Predicao / Real | knife | scissor | scissors | background |
+|-----------------|-------|---------|----------|------------|
+| **knife** | 901 | 0 | 0 | 231 |
+| **scissor** | 15 | 0 | 0 | 11 |
+| **scissors** | 0 | 0 | 0 | 0 |
+| **background** | 156 | 0 | 0 | - |
+
+**Interpretacao Detalhada:**
+
+1. **True Positives (Acertos):**
+   - knife: 901 deteccoes corretas (celula azul escuro)
+
+2. **False Negatives (Objetos nao detectados):**
+   - 156 facas foram classificadas como background (nao detectadas)
+   - Taxa de deteccao: 901/(901+156) = **85.2%**
+
+3. **False Positives (Alarmes falsos):**
+   - 231 regioes de background foram incorretamente classificadas como knife
+   - 11 regioes de background foram classificadas como scissor
+
+4. **Confusao entre Classes:**
+   - 15 facas foram incorretamente classificadas como scissor
+   - Isso indica alguma similaridade visual entre facas e tesouras
+
+**Conclusao**: O modelo tem bom desempenho na classe knife, mas apresenta alguns falsos positivos. As classes scissor e scissors nao tiveram amostras suficientes para avaliacao significativa.
+
+---
+
+## 7. Curvas de Desempenho
+
+### Curva Precision-Recall (PR_curve.png)
+
+![Curva Precision-Recall](runs/detect8/PR_curve.png)
+
+A curva PR (Precision-Recall) e fundamental para avaliar o desempenho do modelo em diferentes limiares de confianca:
+
+**O que o grafico mostra:**
+- Eixo X (Recall): Proporcao de objetos reais que foram detectados
+- Eixo Y (Precision): Proporcao de deteccoes que estao corretas
+- Linha azul clara: Desempenho da classe "knife"
+- Linha azul escura: Media de todas as classes
+
+**Metricas Extraidas:**
+- **knife**: mAP@0.5 = 0.827 (82.7%)
+- **all classes**: mAP@0.5 = 0.827 (82.7%)
+
+**Interpretacao:**
+- A curva comeca no canto superior esquerdo (alta precisao, baixo recall)
+- Mantem precisao acima de 90% ate recall de ~60%
+- Ponto de equilibrio em torno de 80% precisao e 80% recall
+- A area sob a curva (AUC) de 0.827 indica excelente desempenho
+- Quanto mais a curva se aproxima do canto superior direito, melhor o modelo
+
+### Curva F1-Confidence (F1_curve.png)
+
+![Curva F1-Confidence](runs/detect8/F1_curve.png)
+
+A curva F1 mostra a relacao entre o F1-Score e o limiar de confianca utilizado:
+
+**O que o grafico mostra:**
+- Eixo X (Confidence): Limiar de confianca para considerar uma deteccao
+- Eixo Y (F1): F1-Score, media harmonica entre precisao e recall
+- F1 = 2 * (Precision * Recall) / (Precision + Recall)
+
+**Metricas Extraidas:**
+- **Melhor F1-Score**: 0.80 (80%)
+- **Limiar otimo**: 0.369
+
+**Interpretacao:**
+- O F1-Score maximo de 0.80 e alcancado com confianca de ~0.37
+- Limiares muito baixos (<0.2) resultam em muitos falsos positivos
+- Limiares muito altos (>0.8) resultam em muitos falsos negativos
+- **Recomendacao**: Usar limiar entre 0.35 e 0.50 para operacao
+
+### Curvas de Precisao e Recall Individuais
+
+**P_curve.png** - Mostra como a precisao varia com o limiar de confianca
+**R_curve.png** - Mostra como o recall varia com o limiar de confianca
+
+Estas curvas auxiliam na escolha do limiar ideal dependendo se a prioridade e minimizar falsos positivos (alta precisao) ou maximizar deteccoes (alto recall).
 
 ---
 
