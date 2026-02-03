@@ -129,6 +129,7 @@ def main():
         name="detect",
         patience=train_cfg.get("patience", 10),
         workers=0,  # Disable multiprocessing to avoid memory errors on Windows
+        amp=False,  # Disable AMP to avoid NaN losses on GPUs like GTX 1660 Ti
     )
 
     best_weights_path = results.save_dir / "weights" / "best.pt"
