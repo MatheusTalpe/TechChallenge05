@@ -1,37 +1,121 @@
+# =============================================================================
+# VisionSecure AI - Arquivo de Configuracao Principal
+# =============================================================================
+# Este arquivo contem todas as configuracoes do projeto, incluindo parametros
+# de treinamento e inferencia para os dois modelos suportados:
+# - YOLO (YOLOv8): Arquitetura CNN, rapido, ideal para tempo real
+# - RT-DETR: Arquitetura Transformer, maior precisao, mais lento
+# =============================================================================
+
 project_name: "visionsecure_mvp"
 
+# Dataset no formato YOLO (usado por ambos os modelos)
 data_yaml: "./data/dataset.yaml"
 
-# modelo base para fine-tuning
-model_name: "yolov8n.pt"
-
+# Diretorio base para salvar resultados de treinamento
+# - YOLO salva em: ./runs/yolo/detectX/
+# - RT-DETR salva em: ./runs/rtdetr/detectX/
 runs_dir: "./runs"
 
+# =============================================================================
+# CONFIGURACOES DE TREINAMENTO
+# =============================================================================
+# Parametros gerais sao usados como fallback se nao houver config especifica
+# do modelo. Para customizar, use as secoes 'yolo' ou 'rtdetr' abaixo.
+# =============================================================================
 train:
-  imgsz: 640
-  epochs: 40
-  batch: 4
-  device: 0
-  patience: 10
+  # Parametros gerais (fallback para ambos os modelos)
+  imgsz: 640        # Tamanho da imagem de entrada
+  epochs: 40        # Numero de epocas de treinamento
+  batch: 4          # Tamanho do batch (reduza se tiver pouca memoria GPU)
+  device: 0         # 0 = GPU, "cpu" = CPU
+  patience: 10      # Early stopping: para se nao melhorar em N epocas
 
+  # -----------------------------------------------------------------------------
+  # Configuracoes especificas do YOLO (train_yolo.py)
+  # -----------------------------------------------------------------------------
+  # Arquitetura: CNN (Convolutional Neural Network)
+  # Caracteristicas: Single-stage detector, muito rapido (~30+ FPS)
+  # Ideal para: Deteccao em tempo real via webcam
+  # -----------------------------------------------------------------------------
+  yolo:
+    model: "yolov8n.pt"   # Modelo base: yolov8n (nano), yolov8s, yolov8m, yolov8l, yolov8x
+    imgsz: 640
+    epochs: 40
+    batch: 8              # YOLO pode usar batch maior que RT-DETR
+    device: 0
+    patience: 10
+
+  # -----------------------------------------------------------------------------
+  # Configuracoes especificas do RT-DETR (train_rtdetr.py)
+  # -----------------------------------------------------------------------------
+  # Arquitetura: Transformer (mecanismos de atencao)
+  # Caracteristicas: Hibrido CNN+Transformer, nao requer NMS, alta precisao
+  # Ideal para: Quando precisao e mais importante que velocidade
+  # NOTA: Usa o mesmo formato de dataset do YOLO!
+  # -----------------------------------------------------------------------------
+  rtdetr:
+    model: "rtdetr-l.pt"  # Modelo base: rtdetr-l (large), rtdetr-x (extra-large)
+    imgsz: 640
+    epochs: 40
+    batch: 4              # RT-DETR usa mais memoria, batch menor
+    device: 0
+    patience: 10
+
+# =============================================================================
+# CONFIGURACOES DE INFERENCIA (DETECCAO)
+# =============================================================================
+# Escolha qual modelo usar na deteccao via webcam alterando 'model_type'.
+# Os pesos de cada modelo sao configurados separadamente.
+# =============================================================================
 inference:
-  weights: "./runs/detect/weights/best.pt"
-  conf_thres: 0.4
-  iou_thres: 0.45
-  classes_of_interest:
+  # Tipo de modelo para deteccao: "yolo" ou "rtdetr"
+  # Altere este valor para trocar entre os modelos na deteccao
+  model_type: "yolo"
+
+  # Parametros gerais de deteccao
+  conf_thres: 0.4         # Limiar de confianca (0.0 a 1.0)
+  iou_thres: 0.45         # Limiar de IoU para NMS
+  classes_of_interest:    # Classes a detectar
     - knife
     - bat
     - impact_tool
     - scissor
     - scissors
 
-stream:
-  source: 0
-  fps_process: 5
+  # -----------------------------------------------------------------------------
+  # Pesos do modelo YOLO para inferencia
+  # -----------------------------------------------------------------------------
+  # Apos treinar com train_yolo.py, o modelo e salvo em:
+  # ./runs/yolo/detectX/weights/best.pt
+  # Atualize o caminho abaixo para usar o modelo treinado.
+  # -----------------------------------------------------------------------------
+  yolo:
+    weights: "./runs/yolo/detect/weights/best.pt"
 
+  # -----------------------------------------------------------------------------
+  # Pesos do modelo RT-DETR para inferencia
+  # -----------------------------------------------------------------------------
+  # Apos treinar com train_rtdetr.py, o modelo e salvo em:
+  # ./runs/rtdetr/detectX/weights/best.pt
+  # Atualize o caminho abaixo para usar o modelo treinado.
+  # -----------------------------------------------------------------------------
+  rtdetr:
+    weights: "./runs/rtdetr/detect/weights/best.pt"
+
+# =============================================================================
+# CONFIGURACOES DE STREAM (WEBCAM)
+# =============================================================================
+stream:
+  source: 0             # 0 = webcam padrao, ou caminho para video/RTSP
+  fps_process: 5        # Frames por segundo a processar
+
+# =============================================================================
+# CONFIGURACOES DE ALERTAS
+# =============================================================================
 alerts:
-  min_persistent_frames: 3
+  min_persistent_frames: 3    # Frames consecutivos para disparar alerta
   webhook_url: "http://localhost:8000/alert"
-  send_frame: true
+  send_frame: true            # Salvar frame quando detectar objeto
   email:
-    enabled: true
+    enabled: true             # Habilitar envio de email
