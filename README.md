@@ -1,6 +1,6 @@
 # VisionSecure AI - MVP de Detecao de Objetos Perigosos
 
-MVP para deteccao de objetos perigosos (facas, bastoes, ferramentas de impacto e tesouras) em imagens e video (webcam), com geracao de alertas via webhook e e-mail, usando YOLO.
+MVP para deteccao de objetos perigosos (facas, bastoes, ferramentas de impacto e tesouras) em imagens e video (webcam), com geracao de alertas via webhook e e-mail. O sistema suporta dois modelos de deteccao: YOLO (YOLOv8) e RT-DETR.
 
 ## Sobre o Projeto
 
@@ -10,40 +10,61 @@ Este MVP (Minimum Viable Product) e capaz de identificar objetos perigosos em di
 
 ### Funcionalidades
 
-O sistema oferece deteccao automatizada de cinco classes de objetos perigosos: facas (knife), bastoes (bat), ferramentas de impacto (impact_tool), tesoura (scissor) e tesouras (scissors). Alem disso, possui um sistema de alertas automaticos via webhook e e-mail quando objetos perigosos sao detectados, suporte a deteccao em tempo real via webcam, auto-rotulagem de imagens usando modelo YOLO pre-treinado, e treinamento de modelo customizado com dataset proprio.
+O sistema oferece deteccao automatizada de cinco classes de objetos perigosos: facas (knife), bastoes (bat), ferramentas de impacto (impact_tool), tesoura (scissor) e tesouras (scissors). Alem disso, possui um sistema de alertas automaticos via webhook e e-mail quando objetos perigosos sao detectados, suporte a deteccao em tempo real via webcam, e treinamento de modelo customizado com dataset proprio. O sistema permite escolher entre dois modelos de deteccao (YOLO ou RT-DETR) atraves de configuracao simples.
+
+### Justificativa de Escolha dos Modelos
+
+O projeto implementa dois modelos de deteccao de objetos com arquiteturas fundamentalmente diferentes, permitindo ao usuario escolher o mais adequado para seu caso de uso:
+
+**YOLO (YOLOv8) - Arquitetura CNN**
+
+O YOLO (You Only Look Once) e baseado em Redes Neurais Convolucionais (CNN). E um detector single-stage que processa a imagem inteira em uma unica passagem, resultando em alta velocidade de inferencia (~30+ FPS). Ideal para deteccao em tempo real via webcam onde a velocidade e prioritaria. O modelo YOLOv8n (nano) foi escolhido por ser uma versao leve adequada para prototipagem e execucao em hardware limitado.
+
+**RT-DETR - Arquitetura Transformer**
+
+O RT-DETR (Real-Time DEtection TRansformer) e baseado em mecanismos de atencao (Transformers), representando uma abordagem mais moderna para deteccao de objetos. E um modelo hibrido que combina CNN para extracao de features com Transformer para processamento. Nao requer NMS (Non-Maximum Suppression), simplificando o pipeline. Oferece maior precisao em cenarios complexos, porem com velocidade inferior (~5-10 FPS). Ideal quando a precisao e mais importante que a velocidade.
+
+**Vantagem do Projeto**
+
+Ambos os modelos utilizam o mesmo formato de dataset (formato YOLO com labels em arquivos .txt), permitindo reaproveitar completamente os dados de treinamento sem necessidade de conversao. Isso possibilita comparar facilmente o desempenho de arquiteturas CNN vs Transformer no mesmo conjunto de dados.
 
 ### Arquitetura
 
-O projeto utiliza YOLOv8n como arquitetura de rede neural, escolhida por ser uma variante leve e adequada para prototipos em tempo quase real. O dataset contem aproximadamente 4.000 imagens distribuidas entre amostras positivas (contendo objetos perigosos) e negativas (sem objetos perigosos), garantindo robustez e reducao de falsos positivos.
+O projeto suporta duas arquiteturas de rede neural: YOLOv8n (CNN) para deteccao rapida em tempo real, e RT-DETR-l (Transformer) para maior precisao. O dataset contem aproximadamente 7.700 imagens distribuidas entre amostras positivas (contendo objetos perigosos) e negativas (sem objetos perigosos), garantindo robustez e reducao de falsos positivos.
 
 ## Estrutura do Projeto
 
 ```
 visionsecure-mvp/
 ├── alerts.py               # envio de alertas (webhook + e-mail)
-├── auto_label.py           # auto-rotulagem usando YOLO pre-treinado
 ├── config.py               # leitura de config.yaml e .env
 ├── config.yaml             # arquivo de configuracao principal
 ├── config_example.yaml     # exemplo de configuracao
 ├── detection.py            # funcoes de deteccao e construcao de payload
-├── train_model.py          # treinamento do modelo + graficos + avaliacao
+├── train_yolo.py           # treinamento do modelo YOLO (CNN)
+├── train_rtdetr.py         # treinamento do modelo RT-DETR (Transformer)
 ├── webcam_main.py          # loop principal da webcam (inferencia + alertas)
 ├── webhook_server.py       # servidor FastAPI para receber alertas
 ├── requirements.txt        # dependencias Python
 ├── .env.example            # exemplo de variaveis de ambiente
 ├── .gitignore              # arquivos ignorados pelo git
-└── data/
-    ├── raw/                # imagens sem rotulo (entrada da auto-rotulagem)
-    ├── auto_labeled/
-    │   ├── images/         # imagens apos auto-rotulagem
-    │   └── labels/         # labels YOLO gerados automaticamente
-    ├── images/
-    │   ├── train/          # imagens de treino
-    │   └── val/            # imagens de validacao
-    ├── labels/
-    │   ├── train/          # labels YOLO de treino
-    │   └── val/            # labels YOLO de validacao
-    └── dataset.yaml        # definicao do dataset no formato YOLO
+├── data/
+│   ├── images/
+│   │   ├── train/          # imagens de treino
+│   │   └── val/            # imagens de validacao
+│   ├── labels/
+│   │   ├── train/          # labels YOLO de treino
+│   │   └── val/            # labels YOLO de validacao
+│   └── dataset.yaml        # definicao do dataset no formato YOLO
+└── runs/
+    ├── yolo/               # resultados de treinamento YOLO
+    │   └── detectX/        # cada run gera uma pasta (detect, detect2, etc)
+    │       └── weights/
+    │           └── best.pt # melhor modelo YOLO treinado
+    └── rtdetr/             # resultados de treinamento RT-DETR
+        └── detectX/        # cada run gera uma pasta (detect, detect2, etc)
+            └── weights/
+                └── best.pt # melhor modelo RT-DETR treinado
 ```
 
 ## Configuracao do Ambiente (Windows 11)
@@ -110,27 +131,47 @@ O arquivo `config.yaml` ja vem configurado com valores padrao. Verifique se os c
 
 ## Execucao Passo a Passo
 
-### 1. Auto-Rotulagem (Opcional)
-
-Se voce tiver imagens sem rotulo que deseja processar, coloque-as na pasta `data/raw/` e execute:
-
-```bash
-python auto_label.py
-```
-
-Este script aplica um modelo YOLO pre-treinado para gerar automaticamente os rotulos das imagens, salvando os resultados em `data/auto_labeled/`.
-
-### 2. Treinamento do Modelo
+### 1. Treinamento do Modelo
 
 Antes de treinar, certifique-se de que existem imagens e labels nas pastas `data/images/train/`, `data/images/val/`, `data/labels/train/` e `data/labels/val/`.
 
-Execute o treinamento:
+**Opcao A: Treinamento com YOLO (CNN - Recomendado para tempo real)**
 
 ```bash
-python train_model.py
+python train_yolo.py
 ```
 
-O script ira treinar o modelo YOLOv8n com os parametros definidos em `config.yaml`, gerar graficos de metricas (perdas, mAP, precisao, recall), executar avaliacao final e exibir metricas de assertividade, e salvar o melhor modelo em `runs/detect/train/weights/best.pt`.
+O script ira treinar o modelo YOLOv8n com os parametros definidos em `config.yaml` (secao `train.yolo`), gerar graficos de metricas (perdas, mAP, precisao, recall), executar avaliacao final e exibir metricas de assertividade, e salvar o melhor modelo em `runs/yolo/detectX/weights/best.pt`.
+
+**Opcao B: Treinamento com RT-DETR (Transformer - Maior precisao)**
+
+```bash
+python train_rtdetr.py
+```
+
+O script ira treinar o modelo RT-DETR-l com os parametros definidos em `config.yaml` (secao `train.rtdetr`), gerar graficos de metricas, executar avaliacao final, e salvar o melhor modelo em `runs/rtdetr/detectX/weights/best.pt`.
+
+**Comparacao entre os modelos:**
+
+| Caracteristica | YOLO (train_yolo.py) | RT-DETR (train_rtdetr.py) |
+|----------------|----------------------|---------------------------|
+| Arquitetura | CNN | Transformer |
+| Velocidade | Rapido (~30+ FPS) | Mais lento (~5-10 FPS) |
+| Precisao | Boa | Maior |
+| Uso ideal | Tempo real | Precisao prioritaria |
+| Modelo base | yolov8n.pt | rtdetr-l.pt |
+
+### 2. Selecionar Modelo para Deteccao
+
+Antes de executar a deteccao, configure qual modelo deseja usar editando o arquivo `config.yaml`:
+
+```yaml
+inference:
+  # Tipo de modelo para deteccao: "yolo" ou "rtdetr"
+  model_type: "yolo"  # Altere para "rtdetr" se preferir usar RT-DETR
+```
+
+O sistema ira automaticamente buscar o modelo treinado mais recente na pasta correspondente (`runs/yolo/` ou `runs/rtdetr/`).
 
 ### 3. Iniciar Servidor de Webhook (Opcional)
 
@@ -152,7 +193,7 @@ Em outro terminal, execute a deteccao:
 python webcam_main.py
 ```
 
-O script ira carregar o modelo treinado, abrir a webcam padrao, processar frames em tempo real detectando objetos perigosos, desenhar bounding boxes na janela de video, e enviar alertas via webhook e e-mail quando deteccoes persistentes forem identificadas.
+O script ira carregar o modelo selecionado (YOLO ou RT-DETR conforme configurado), abrir a webcam padrao, processar frames em tempo real detectando objetos perigosos, desenhar bounding boxes na janela de video, e enviar alertas via webhook e e-mail quando deteccoes persistentes forem identificadas.
 
 Pressione `q` para encerrar a deteccao.
 
@@ -162,16 +203,17 @@ Pressione `q` para encerrar a deteccao.
 # Ativar ambiente virtual
 .venv\Scripts\activate
 
-# Auto-rotulagem (opcional)
-python auto_label.py
+# Treinar o modelo YOLO (CNN - rapido)
+python train_yolo.py
 
-# Treinar o modelo
-python train_model.py
+# OU treinar o modelo RT-DETR (Transformer - maior precisao)
+python train_rtdetr.py
 
 # Servidor de alertas (em terminal separado)
 python webhook_server.py
 
 # Deteccao em tempo real via webcam
+# (configure inference.model_type em config.yaml para escolher o modelo)
 python webcam_main.py
 ```
 
