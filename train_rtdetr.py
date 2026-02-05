@@ -186,6 +186,7 @@ def main():
         patience=patience,
         workers=0,  # Desabilita multiprocessing para evitar erros de memoria no Windows
         amp=False,  # Desabilita AMP para evitar NaN em GPUs como GTX 1660 Ti
+        plots=False,  # Desabilita plots durante treinamento para evitar erro de memoria
     )
 
     best_weights_path = results.save_dir / "weights" / "best.pt"
