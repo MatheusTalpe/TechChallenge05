@@ -1,19 +1,30 @@
 # detection.py
+# =============================================================================
+# Funcoes de Deteccao de Objetos
+# =============================================================================
+# Este modulo contem funcoes para carregar modelos e executar inferencia.
+# Suporta tanto YOLO (CNN) quanto RT-DETR (Transformer) atraves da biblioteca
+# Ultralytics, que usa a mesma interface para ambos os modelos.
+# =============================================================================
+
 import cv2
 from pathlib import Path
 from datetime import datetime
 from ultralytics import YOLO
 
 
-def load_model(weights_path: str) -> YOLO:
+def load_model(weights_path: str):
     """
-    Carrega o modelo YOLO a partir do arquivo de pesos.
+    Carrega o modelo de deteccao a partir do arquivo de pesos.
+    
+    Suporta tanto modelos YOLO quanto RT-DETR atraves da biblioteca Ultralytics.
+    A classe YOLO do Ultralytics e usada para ambos os tipos de modelo.
     
     Args:
         weights_path: Caminho para o arquivo de pesos (.pt)
         
     Returns:
-        Modelo YOLO carregado
+        Modelo carregado (YOLO ou RT-DETR)
         
     Raises:
         FileNotFoundError: Se o arquivo de pesos nao existir
@@ -24,24 +35,51 @@ def load_model(weights_path: str) -> YOLO:
         raise FileNotFoundError(f"Arquivo de pesos nao encontrado: {weights_path}")
     
     try:
+        # A classe YOLO do Ultralytics suporta tanto YOLO quanto RT-DETR
         model = YOLO(weights_path)
+        print(f"Modelo carregado: {weights_path}")
+        print(f"Classes disponiveis: {list(model.names.values())}")
         return model
     except Exception as e:
-        raise Exception(f"Erro ao carregar modelo YOLO: {e}")
+        raise Exception(f"Erro ao carregar modelo: {e}")
 
 
 def run_inference(model, frame, conf_thres: float, iou_thres: float, classes_of_interest: set):
-    results = model.predict(
-        source=frame,
-        conf=conf_thres,
-        iou=iou_thres,
-        verbose=False
-    )
+    """
+    Executa inferencia no frame usando o modelo carregado.
+    
+    Funciona tanto com modelos YOLO quanto RT-DETR, pois ambos usam
+    a mesma interface de predicao do Ultralytics.
+    
+    Args:
+        model: Modelo carregado (YOLO ou RT-DETR)
+        frame: Frame OpenCV para processar
+        conf_thres: Limiar de confianca minimo
+        iou_thres: Limiar de IoU para NMS (ignorado pelo RT-DETR)
+        classes_of_interest: Conjunto de nomes de classes a detectar
+        
+    Returns:
+        Tupla (frame_anotado, lista_de_deteccoes)
+    """
+    try:
+        results = model.predict(
+            source=frame,
+            conf=conf_thres,
+            iou=iou_thres,
+            verbose=False
+        )
+    except Exception as e:
+        print(f"Erro na inferencia: {e}")
+        return frame, []
 
     detections_of_interest = []
     for r in results:
         boxes = r.boxes
         names = r.names
+        
+        if boxes is None or len(boxes) == 0:
+            continue
+            
         for box in boxes:
             cls_id = int(box.cls[0])
             cls_name = names[cls_id]
