@@ -170,8 +170,9 @@ def build_alert_payload(camera_id, detections, frame_path=None):
         "knife": "high",
         "scissor": "medium",
         "scissors": "medium",
-        "bat": "medium",
-        "impact_tool": "medium",
+        "hammer": "medium",
+        "screwdriver": "medium",
+        "wrench": "medium",
     }
 
     max_severity = "low"

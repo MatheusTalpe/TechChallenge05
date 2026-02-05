@@ -72,14 +72,16 @@ inference:
   # Tipo de modelo para deteccao: "yolo" ou "rtdetr"
   # Altere este valor para trocar entre os modelos na deteccao
   model_type: "yolo"
+  # model_type: "rtdetr"
 
   # Parametros gerais de deteccao
-  conf_thres: 0.4         # Limiar de confianca (0.0 a 1.0)
+  conf_thres: 0.6         # Limiar de confianca (0.0 a 1.0)
   iou_thres: 0.45         # Limiar de IoU para NMS
   classes_of_interest:    # Classes a detectar
     - knife
-    - bat
-    - impact_tool
+    - hammer
+    - screwdriver
+    - wrench
     - scissor
     - scissors
 
