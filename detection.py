@@ -82,6 +82,16 @@ def run_inference(model, frame, conf_thres: float, iou_thres: float, classes_of_
             
         for box in boxes:
             cls_id = int(box.cls[0])
+            
+            # Verifica se o ID da classe existe no mapeamento
+            # Isso pode falhar se usar modelo pre-treinado com classes diferentes
+            if cls_id not in names:
+                print(f"AVISO: Classe ID {cls_id} nao encontrada no modelo.")
+                print(f"Classes disponiveis: {list(names.keys())}")
+                print("Voce pode estar usando um modelo pre-treinado.")
+                print("Execute train_rtdetr.py ou train_yolo.py para treinar com suas classes.")
+                continue
+                
             cls_name = names[cls_id]
             if cls_name not in classes_of_interest:
                 continue
