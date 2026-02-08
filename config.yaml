@@ -88,22 +88,20 @@ inference:
   # -----------------------------------------------------------------------------
   # Pesos do modelo YOLO para inferencia
   # -----------------------------------------------------------------------------
-  # Apos treinar com train_yolo.py, o modelo e salvo em:
-  # ./runs/yolo/detectX/weights/best.pt
-  # Atualize o caminho abaixo para usar o modelo treinado.
+  # O sistema busca AUTOMATICAMENTE o modelo mais recente em ./runs/yolo/
+  # Se quiser forcar um modelo especifico, descomente e ajuste o caminho abaixo.
   # -----------------------------------------------------------------------------
   yolo:
-    weights: "./runs/yolo/detect/weights/best.pt"
+    weights: ""  # Vazio = busca automatica do modelo mais recente
 
   # -----------------------------------------------------------------------------
   # Pesos do modelo RT-DETR para inferencia
   # -----------------------------------------------------------------------------
-  # Apos treinar com train_rtdetr.py, o modelo e salvo em:
-  # ./runs/rtdetr/detectX/weights/best.pt
-  # Atualize o caminho abaixo para usar o modelo treinado.
+  # O sistema busca AUTOMATICAMENTE o modelo mais recente em ./runs/rtdetr/
+  # Se quiser forcar um modelo especifico, descomente e ajuste o caminho abaixo.
   # -----------------------------------------------------------------------------
   rtdetr:
-    weights: "./runs/rtdetr/detect/weights/best.pt"
+    weights: ""  # Vazio = busca automatica do modelo mais recente
 
 # =============================================================================
 # CONFIGURACOES DE STREAM (WEBCAM)
