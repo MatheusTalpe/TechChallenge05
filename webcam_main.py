@@ -152,9 +152,10 @@ def main():
     email_enabled = alerts_cfg.get("email", {}).get("enabled", True)
 
     # Carrega o modelo selecionado
+    # IMPORTANTE: Passa model_type para usar a classe correta (YOLO ou RTDETR)
     try:
         weights_path = get_model_weights(cfg, model_type)
-        model = load_model(weights_path)
+        model = load_model(weights_path, model_type)
     except FileNotFoundError as e:
         print(f"\nErro: {e}")
         return
