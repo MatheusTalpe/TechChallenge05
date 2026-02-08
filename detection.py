@@ -10,18 +10,20 @@
 import cv2
 from pathlib import Path
 from datetime import datetime
-from ultralytics import YOLO
+from ultralytics import YOLO, RTDETR
 
 
-def load_model(weights_path: str):
+def load_model(weights_path: str, model_type: str = "yolo"):
     """
     Carrega o modelo de deteccao a partir do arquivo de pesos.
     
     Suporta tanto modelos YOLO quanto RT-DETR atraves da biblioteca Ultralytics.
-    A classe YOLO do Ultralytics e usada para ambos os tipos de modelo.
+    Usa a classe apropriada para cada tipo de modelo para garantir
+    o mapeamento correto de IDs de classe durante a inferencia.
     
     Args:
         weights_path: Caminho para o arquivo de pesos (.pt)
+        model_type: Tipo do modelo ("yolo" ou "rtdetr")
         
     Returns:
         Modelo carregado (YOLO ou RT-DETR)
@@ -35,9 +37,15 @@ def load_model(weights_path: str):
         raise FileNotFoundError(f"Arquivo de pesos nao encontrado: {weights_path}")
     
     try:
-        # A classe YOLO do Ultralytics suporta tanto YOLO quanto RT-DETR
-        model = YOLO(weights_path)
-        print(f"Modelo carregado: {weights_path}")
+        # Usa a classe apropriada para cada tipo de modelo
+        # IMPORTANTE: RT-DETR deve usar a classe RTDETR para mapeamento correto de classes
+        if model_type.lower() == "rtdetr":
+            model = RTDETR(weights_path)
+            print(f"Modelo RT-DETR carregado: {weights_path}")
+        else:
+            model = YOLO(weights_path)
+            print(f"Modelo YOLO carregado: {weights_path}")
+        
         print(f"Classes disponiveis: {list(model.names.values())}")
         return model
     except Exception as e:
