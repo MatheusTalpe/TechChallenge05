@@ -72,7 +72,7 @@ inference:
   # Tipo de modelo para deteccao: "yolo" ou "rtdetr"
   # Altere este valor para trocar entre os modelos na deteccao
   # model_type: "yolo"
-  model_type: "rtdetr"
+  model_type: "yolo"
 
   # Parametros gerais de deteccao
   conf_thres: 0.6         # Limiar de confianca (0.0 a 1.0)
