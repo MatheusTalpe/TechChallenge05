@@ -24,5 +24,3 @@ htmlcov/
 frames/
 alert_logs/
 runs/detect/train*/
-*.pt
-!yolov8n.pt

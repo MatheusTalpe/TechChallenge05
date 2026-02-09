@@ -1,8 +1,8 @@
 task: detect
 mode: train
 model: rtdetr-l.pt
-data: C:\Users\mathe\AppData\Local\Temp\dataset_rtdetr_lu6x7poz.yaml
-epochs: 2
+data: C:\Users\mathe\AppData\Local\Temp\dataset_rtdetr_xo83kks8.yaml
+epochs: 20
 time: null
 patience: 10
 batch: 4
@@ -42,7 +42,7 @@ iou: 0.7
 max_det: 300
 half: false
 dnn: false
-plots: true
+plots: false
 source: null
 vid_stride: 1
 stream_buffer: false
