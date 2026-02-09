@@ -257,10 +257,10 @@ O projeto VisionSecure AI tem como objetivo desenvolver um sistema de monitorame
 
 | Metrica | YOLO (CNN) | RT-DETR (Transformer) |
 |---------|------------|----------------------|
-| **mAP@0.50** | 79.4% | **80.7%** |
-| **mAP@0.50-0.95** | **61.0%** | 65.6% |
-| **Precisao** | 77.1% | **81.3%** |
-| **Recall** | **76.9%** | 76.6% |
+| **mAP@0.50** | 79.4% | **81.1%** |
+| **mAP@0.50-0.95** | 61.0% | **66.4%** |
+| **Precisao** | 77.1% | **83.0%** |
+| **Recall** | **76.9%** | 76.7% |
 | **Epocas** | 40 | 20 |
 | **Velocidade** | ~30+ FPS | ~5-10 FPS |
 | **Nivel Assertividade** | MEDIA | ALTA |
@@ -297,21 +297,21 @@ O RT-DETR alcancou nivel de assertividade ALTA (mAP >= 80%) com apenas 20 epocas
 
 **Evolucao do Treinamento:**
 
-![Evolucao do Treinamento YOLO](runs/yolo/detect3/results.png)
+![Evolucao do Treinamento YOLO](runs/yolo/detect/results.png)
 
 **Matriz de Confusao YOLO:**
 
-![Matriz de Confusao YOLO](runs/yolo/detect3/confusion_matrix.png)
+![Matriz de Confusao YOLO](runs/yolo/detect/confusion_matrix.png)
 
 A matriz mostra que o modelo YOLO detecta bem a classe "knife" (916 acertos), mas apresenta 238 falsos positivos de background classificados como knife. As classes hammer, screwdriver e wrench nao possuem dados de treinamento.
 
 **Curva Precision-Recall YOLO:**
 
-![Curva PR YOLO](runs/yolo/detect3/PR_curve.png)
+![Curva PR YOLO](runs/yolo/detect/PR_curve.png)
 
 **Curva F1-Confidence YOLO:**
 
-![Curva F1 YOLO](runs/yolo/detect3/F1_curve.png)
+![Curva F1 YOLO](runs/yolo/detect/F1_curve.png)
 
 ---
 
@@ -334,34 +334,32 @@ A matriz mostra que o modelo YOLO detecta bem a classe "knife" (916 acertos), ma
 
 | Metrica | Valor | Interpretacao |
 |---------|-------|---------------|
-| **mAP@0.50** | **80.7%** | Excelente - Nivel de assertividade ALTA |
-| **mAP@0.50-0.95** | **65.6%** | Muito bom desempenho em diferentes limiares |
-| **Precisao** | **81.3%** | Alta taxa de acertos nas deteccoes |
-| **Recall** | **76.6%** | Boa capacidade de encontrar objetos |
+| **mAP@0.50** | **81.1%** | Excelente - Nivel de assertividade ALTA |
+| **mAP@0.50-0.95** | **66.4%** | Muito bom desempenho em diferentes limiares |
+| **Precisao** | **83.0%** | Alta taxa de acertos nas deteccoes |
+| **Recall** | **76.7%** | Boa capacidade de encontrar objetos |
 
 #### Graficos de Treinamento RT-DETR
 
 **Evolucao do Treinamento:**
 
-![Evolucao do Treinamento RT-DETR](runs/rtdetr/detect3/results.png)
+![Evolucao do Treinamento RT-DETR](runs/rtdetr/detect2/losses.png)
 
-**Matriz de Confusao RT-DETR:**
+O grafico mostra a evolucao das perdas (giou_loss, cls_loss, l1_loss) durante o treinamento do RT-DETR. Todas as metricas apresentaram convergencia estavel ao longo das 20 epocas.
 
-![Matriz de Confusao RT-DETR](runs/rtdetr/detect3/confusion_matrix.png)
+**Evolucao do mAP RT-DETR:**
 
-**Curva Precision-Recall RT-DETR:**
+![mAP RT-DETR](runs/rtdetr/detect2/map.png)
 
-![Curva PR RT-DETR](runs/rtdetr/detect3/PR_curve.png)
+**Evolucao de Precisao e Recall RT-DETR:**
 
-**Curva F1-Confidence RT-DETR:**
-
-![Curva F1 RT-DETR](runs/rtdetr/detect3/F1_curve.png)
+![Precision Recall RT-DETR](runs/rtdetr/detect2/precision_recall.png)
 
 ---
 
 ### Distribuicao do Dataset
 
-![Distribuicao do Dataset](runs/yolo/detect3/labels.jpg)
+![Distribuicao do Dataset](runs/yolo/detect/labels.jpg)
 
 O dataset apresenta as seguintes caracteristicas:
 
@@ -385,20 +383,19 @@ Para melhorar os modelos, recomenda-se balancear o dataset coletando mais imagen
 
 ### Conclusao
 
-Os modelos treinados atendem aos requisitos do MVP da VisionSecure AI. O RT-DETR alcancou nivel de assertividade ALTA (mAP@0.50 = 80.7%), enquanto o YOLO ficou proximo com 79.4%. O sistema esta apto para deteccao em tempo real via webcam, geracao de alertas automaticos via webhook e e-mail, e integracao com sistemas de monitoramento existentes.
+Os modelos treinados atendem aos requisitos do MVP da VisionSecure AI. O RT-DETR alcancou nivel de assertividade ALTA (mAP@0.50 = 81.1%), enquanto o YOLO ficou proximo com 79.4%. O sistema esta apto para deteccao em tempo real via webcam, geracao de alertas automaticos via webhook e e-mail, e integracao com sistemas de monitoramento existentes.
 
 A escolha entre YOLO e RT-DETR depende do caso de uso: YOLO para tempo real com alta velocidade, RT-DETR para cenarios onde precisao e prioritaria.
 
 ### Arquivos de Referencia
 
 **Resultados YOLO:**
-- `runs/yolo/detect3/results.csv` - Metricas por epoca
-- `runs/yolo/detect3/results.png` - Graficos de evolucao
-- `runs/yolo/detect3/confusion_matrix.png` - Matriz de confusao
-- `runs/yolo/detect3/weights/best.pt` - Modelo treinado
+- `runs/yolo/detect/results.csv` - Metricas por epoca
+- `runs/yolo/detect/results.png` - Graficos de evolucao
+- `runs/yolo/detect/confusion_matrix.png` - Matriz de confusao
+- `runs/yolo/detect/weights/best.pt` - Modelo treinado
 
 **Resultados RT-DETR:**
-- `runs/rtdetr/detect3/results.csv` - Metricas por epoca
-- `runs/rtdetr/detect3/results.png` - Graficos de evolucao
-- `runs/rtdetr/detect3/confusion_matrix.png` - Matriz de confusao
-- `runs/rtdetr/detect3/weights/best.pt` - Modelo treinado
+- `runs/rtdetr/detect2/results.csv` - Metricas por epoca
+- `runs/rtdetr/detect2/losses.png` - Graficos de evolucao das perdas
+- `runs/rtdetr/detect2/weights/best.pt` - Modelo treinado
