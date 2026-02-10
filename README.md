@@ -297,21 +297,21 @@ O RT-DETR alcancou nivel de assertividade ALTA (mAP >= 80%) com apenas 20 epocas
 
 **Evolucao do Treinamento:**
 
-![Evolucao do Treinamento YOLO](runs/yolo/detect3/results.png)
+![Evolucao do Treinamento YOLO](runs/yolo/detect/results.png)
 
 **Matriz de Confusao YOLO:**
 
-![Matriz de Confusao YOLO](runs/yolo/detect3/confusion_matrix.png)
+![Matriz de Confusao YOLO](runs/yolo/detect/confusion_matrix.png)
 
 A matriz mostra que o modelo YOLO detecta bem a classe "knife" (916 acertos), mas apresenta 238 falsos positivos de background classificados como knife. As classes hammer, screwdriver e wrench nao possuem dados de treinamento.
 
 **Curva Precision-Recall YOLO:**
 
-![Curva PR YOLO](runs/yolo/detect3/PR_curve.png)
+![Curva PR YOLO](runs/yolo/detect/PR_curve.png)
 
 **Curva F1-Confidence YOLO:**
 
-![Curva F1 YOLO](runs/yolo/detect3/F1_curve.png)
+![Curva F1 YOLO](runs/yolo/detect/F1_curve.png)
 
 ---
 
@@ -341,27 +341,25 @@ A matriz mostra que o modelo YOLO detecta bem a classe "knife" (916 acertos), ma
 
 #### Graficos de Treinamento RT-DETR
 
-**Evolucao do Treinamento:**
+**Evolucao das Perdas:**
 
-![Evolucao do Treinamento RT-DETR](runs/rtdetr/detect3/results.png)
+![Evolucao das Perdas RT-DETR](runs/rtdetr/detect2/losses.png)
 
-**Matriz de Confusao RT-DETR:**
+O grafico mostra a evolucao das perdas (giou_loss, cls_loss, l1_loss) durante o treinamento. Todas as metricas apresentaram convergencia estavel ao longo das 20 epocas.
 
-![Matriz de Confusao RT-DETR](runs/rtdetr/detect3/confusion_matrix.png)
+**Evolucao do mAP:**
 
-**Curva Precision-Recall RT-DETR:**
+![mAP RT-DETR](runs/rtdetr/detect2/map.png)
 
-![Curva PR RT-DETR](runs/rtdetr/detect3/PR_curve.png)
+**Evolucao de Precisao e Recall:**
 
-**Curva F1-Confidence RT-DETR:**
-
-![Curva F1 RT-DETR](runs/rtdetr/detect3/F1_curve.png)
+![Precision Recall RT-DETR](runs/rtdetr/detect2/precision_recall.png)
 
 ---
 
 ### Distribuicao do Dataset
 
-![Distribuicao do Dataset](runs/yolo/detect3/labels.jpg)
+![Distribuicao do Dataset](runs/yolo/detect/labels.jpg)
 
 O dataset apresenta as seguintes caracteristicas:
 
@@ -392,13 +390,12 @@ A escolha entre YOLO e RT-DETR depende do caso de uso: YOLO para tempo real com 
 ### Arquivos de Referencia
 
 **Resultados YOLO:**
-- `runs/yolo/detect3/results.csv` - Metricas por epoca
-- `runs/yolo/detect3/results.png` - Graficos de evolucao
-- `runs/yolo/detect3/confusion_matrix.png` - Matriz de confusao
-- `runs/yolo/detect3/weights/best.pt` - Modelo treinado
+- `runs/yolo/detect/results.csv` - Metricas por epoca
+- `runs/yolo/detect/results.png` - Graficos de evolucao
+- `runs/yolo/detect/confusion_matrix.png` - Matriz de confusao
+- `runs/yolo/detect/weights/best.pt` - Modelo treinado
 
 **Resultados RT-DETR:**
-- `runs/rtdetr/detect3/results.csv` - Metricas por epoca
-- `runs/rtdetr/detect3/results.png` - Graficos de evolucao
-- `runs/rtdetr/detect3/confusion_matrix.png` - Matriz de confusao
-- `runs/rtdetr/detect3/weights/best.pt` - Modelo treinado
+- `runs/rtdetr/detect2/results.csv` - Metricas por epoca
+- `runs/rtdetr/detect2/losses.png` - Graficos de evolucao das perdas
+- `runs/rtdetr/detect2/weights/best.pt` - Modelo treinado
