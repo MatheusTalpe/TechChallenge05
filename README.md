@@ -10,7 +10,7 @@ Este MVP (Minimum Viable Product) e capaz de identificar objetos perigosos em di
 
 ### Funcionalidades
 
-O sistema oferece deteccao automatizada de cinco classes de objetos perigosos: facas (knife), bastoes (bat), ferramentas de impacto (impact_tool), tesoura (scissor) e tesouras (scissors). Alem disso, possui um sistema de alertas automaticos via webhook e e-mail quando objetos perigosos sao detectados, suporte a deteccao em tempo real via webcam, e treinamento de modelo customizado com dataset proprio. O sistema permite escolher entre dois modelos de deteccao (YOLO ou RT-DETR) atraves de configuracao simples.
+O sistema oferece deteccao automatizada de cinco classes de objetos perigosos: facas (knife), bastoes (bat), ferramentas de impacto (impact_tool), tesoura (scissor) e tesouras (scissors). Alem disso, possui um sistema de alertas automaticos via webhook e e-mail quando objetos perigosos sao detectados, suporte a deteccao em tempo real via webcam. O sistema permite escolher entre dois modelos de deteccao (YOLO ou RT-DETR) atraves de configuracao simples.
 
 ### Justificativa de Escolha dos Modelos
 
